@@ -41,39 +41,36 @@ def fluid_properties(density, specific_heat, initial_temp, final_temp,
     # --- Core Logic ---
     mass = density * volume
     delta_T = final_temp - initial_temp
+    latent_energy =0
 
-    phase_change = False
-    latent_energy = 0
 
     if initial_temp < boiling_temp:
         Q_to_boil = mass * specific_heat * (boiling_temp - initial_temp)
-    else:
-        Q_to_boil = 0
+
     if final_temp < boiling_temp:
         Q = mass * specific_heat * delta_T
     else:
         if initial_temp < boiling_temp:
             phase_change = True 
-            Q1 = Q_to_boil
             latent_energy = mass * latent_heat
-            Q = Q1 + latent_energy
+            Q = Q_to_boil + latent_energy
         else:
             Q = mass * specific_heat * delta_T
+    
     energy_per_volume = Q / volume
 
     return {
         "result": Q,
         "unit": "J",
-        "detail": f"m={mass} kg, ΔT={delta_T}°C, phase_change={phase_change}",
+        "detail": f"m={mass} kg, ΔT={delta_T}°C",
         "properties": {
             "mass (kg)": mass,
             "temperature_change (°C)": delta_T,
             "boiling_point (°C)": boiling_temp,
             "energy_to_reach_boiling (J)": Q_to_boil,
-            "phase_change": phase_change,
             "latent_heat_added (J)": latent_energy,
             "energy_per_volume (J/m^3)": energy_per_volume
         }
     }
 # Test
-print(fluid_properties(5, 1, 20, 100, 2, 80))
+print(fluid_properties(5, 1, 20, 30, 2, 80,5))
