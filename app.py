@@ -1,5 +1,4 @@
 #Needs to be able to take and output data in streamlit make it looka pretty and clean
-#Testing coding abilities since github is being weird about hours
 import streamlit as st
 from test2 import get_calc_constants
 from agent import ask_llm
