@@ -21,7 +21,8 @@ def get_calc_constants(fluid_id):
                 # Strip spaces from keys and values to prevent KeyErrors
                 clean_row = {k.strip(): v.strip() for k, v in row.items() if k}
                 
-                if clean_row.get('id') == str(fluid_id):
+                # This check allows fluid_id to be either the number OR the name
+                if clean_row.get('id') == str(fluid_id) or clean_row.get('name').lower() == str(fluid_id).lower():
                     return {
                         "name": clean_row.get('name'),
                         "density": float(clean_row.get('density', 0)),
