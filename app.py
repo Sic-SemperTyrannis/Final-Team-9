@@ -30,7 +30,7 @@ if st.button("Calculate"):
             calculated_bp = Tc * (0.567 + (0.106 * w))
             error = abs(calculated_bp - actual) / actual * 100
 
-            #Resalts
+            #Results
             st.subheader(f"Results for {data['name']}")
             st.metric("Calculated Boiling Point (K)", f"{calculated_bp:.2f}")
             st.metric("Actual Boiling Point (K)", f"{actual}")
