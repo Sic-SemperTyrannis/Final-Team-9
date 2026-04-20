@@ -1,43 +1,38 @@
-import pandas as pd
+import csv
+import os
 
 def get_calc_constants(liquid_name):
-    df = pd.read_csv('data_file.csv')
-    df.columns = df.columns.str.strip()
+    """
+    Retrieves constants from data_file.csv and maps them to names
+    the app.py and tool.py expect.
+    """
+    # Get the correct path to the CSV file
+    base_path = os.path.dirname(__file__)
+    csv_path = os.path.join(base_path, 'data_file.csv')
+
+    try:
+        with open(csv_path, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                # Search for the liquid name (case-insensitive)
+                if row['name'].strip().lower() == liquid_name.strip().lower():
+                    return {
+                        "name": row['name'],
+                        # Map 'critical temperature (K)' from CSV to 'Tc' for app.py
+                        "Tc": float(row['critical temperature (K)']),
+                        # Map 'boiling point (K)' and convert to Celsius for tool.py
+                        "boiling_temp": float(row['boiling point (K)']) - 273.15,
+                        "omega": float(row['acentric factor']),
+                        "molweight": float(row['molweight']),
+                        # Placeholders for values not in your current CSV
+                        "density": 1000, 
+                        "specific_heat": 4184,
+                        "latent_heat": 2260000 
+                    }
+    except FileNotFoundError:
+        print("Error: data_file.csv not found.")
+    except KeyError as e:
+        print(f"Error: Missing column in CSV: {e}")
     
-    match = df[df['name'].str.contains(liquid_name, case=False, na=False)]
-    
-    if not match.empty:
-        row = match.iloc[0]
-        return {
-            "name": row['name'],
-            "Tc": row['critical temperature (K)'],
-            "omega": row['acentric factor'],
-            "actual_bp": row['boiling point (K)'] # Adding this for testing!
-        }
     return None
-
-# --- THE CALCULATOR ---
-user_query = input("Enter liquid to calculate: ")
-data = get_calc_constants(user_query)
-
-if data:
-    # 1. Get the constants
-    Tc = data['Tc']
-    w = data['omega']
-    actual = data['actual_bp']
-    
-    # 2. THE CALCULATION
-     
-    calculated_bp = Tc * (0.567 + (0.106 * w))
-    
-    # 3. PRINT RESULTS & TEST
-    print(f"\n--- Results for {data['name']} ---")
-    print(f"Calculated BP: {calculated_bp:.2f} K")
-    print(f"Actual BP (from file): {actual} K")
-    
-    print("Test- Calculate error percentage to see how right we are")
-    error = abs(calculated_bp - actual) / actual * 100
-    print(f"Calculation Error: {error:.2f}%")
-    
-else:
-    print("Liquid not found.")
+# (+)-a-pinene
