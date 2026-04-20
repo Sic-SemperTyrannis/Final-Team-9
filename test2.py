@@ -1,38 +1,35 @@
-import csv
 import os
+import csv
 
-def get_calc_constants(liquid_name):
+def get_calc_constants(fluid_id):
     """
-    Retrieves constants from data_file.csv and maps them to names
-    the app.py and tool.py expect.
+    Searches data_file.csv by ID and returns the physical properties.
+    Using 'utf-8-sig' to handle potential Excel/Windows hidden characters.
     """
-    # Get the correct path to the CSV file
+    # Locates the CSV in the same folder as this script
     base_path = os.path.dirname(__file__)
     csv_path = os.path.join(base_path, 'data_file.csv')
-
+    
     try:
-        with open(csv_path, mode='r', encoding='utf-8') as file:
+        if not os.path.exists(csv_path):
+            print(f"Error: Could not find {csv_path}")
+            return None
+
+        with open(csv_path, mode='r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                # Search for the liquid name (case-insensitive)
-                if row['name'].strip().lower() == liquid_name.strip().lower():
+                # Strip spaces from keys and values to prevent KeyErrors
+                clean_row = {k.strip(): v.strip() for k, v in row.items() if k}
+                
+                if clean_row.get('id') == str(fluid_id):
                     return {
-                        "name": row['name'],
-                        # Map 'critical temperature (K)' from CSV to 'Tc' for app.py
-                        "Tc": float(row['critical temperature (K)']),
-                        # Map 'boiling point (K)' and convert to Celsius for tool.py
-                        "boiling_temp": float(row['boiling point (K)']) - 273.15,
-                        "omega": float(row['acentric factor']),
-                        "molweight": float(row['molweight']),
-                        # Placeholders for values not in your current CSV
-                        "density": 1000, 
-                        "specific_heat": 4184,
-                        "latent_heat": 2260000 
+                        "name": clean_row.get('name'),
+                        "density": float(clean_row.get('density', 0)),
+                        "specific_heat": float(clean_row.get('specific_heat', 0)),
+                        "boiling_temp_c": float(clean_row.get('boiling_point_k', 273.15)) - 273.15,
+                        "latent_heat": float(clean_row.get('latent_heat', 0))
                     }
-    except FileNotFoundError:
-        print("Error: data_file.csv not found.")
-    except KeyError as e:
-        print(f"Error: Missing column in CSV: {e}")
+    except Exception as e:
+        print(f"Data Retrieval Error: {e}")
     
     return None
-# (+)-a-pinene
