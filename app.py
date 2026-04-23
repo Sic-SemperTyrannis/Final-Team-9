@@ -1,6 +1,8 @@
 #Needs to be able to take and output data in streamlit make it looka pretty and clean
 import streamlit as st
 from test2 import get_calc_constants
+from tool import fluid_properties # This is for RAG1 comment out later if teamates develop something better. 
+#We were still discussing which file to run RAG through I just threw a preliminary one in here
 from agent import ask_llm
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
@@ -24,19 +26,31 @@ if st.button("Calculate"):
         data = get_calc_constants(liquid_name)
 
         if data:
-            Tc = data['Tc']
-            w = data['omega']
-            actual = data['actual_bp']
+            # RAG 1
+            result = fluid_properties(
+                density=data["density"],
+                specific_heat=data["specific_heat"],
+                initial_temp=25, 
+                final_temp=100,
+                volume=1,
+                boiling_temp=data["boiling_temp_c"],
+                latent_heat=data["latent_heat"]
+            )
 
-            # Calculate
-            calculated_bp = Tc * (0.567 + (0.106 * w))
-            error = abs(calculated_bp - actual) / actual * 100
-
-            #Results
+            #Output. Gives user the reults of the boiling calculations
             st.subheader(f"Results for {data['name']}")
-            st.metric("Calculated Boiling Point (K)", f"{calculated_bp:.2f}")
-            st.metric("Actual Boiling Point (K)", f"{actual}")
-            st.metric("Error (%)", f"{error:.2f}")
+
+            if result["result"] is None:
+                st.error(result["detail"])
+            else:
+                st.metric("Energy Required (J)", f"{result['result']:.2f}")
+                st.metric("Mass (kg)", f"{result['properties']['mass (kg)']:.2f}")
+                st.metric("Boiling Point (°C)", f"{data['boiling_temp_c']:.2f}")
+
+                if use_ai: #(This prompts the Ai and gets the output formatted as desgnated)
+                    prompt = f" Explain the calculations result briefly: Fluid: {data['name']} Energy Required: {result['result']} J Boiling Point: {data['boiling_temp_c']} °C Keep it under 3 sentences and simple."
+                    explanation = ask_llm(prompt)
+                    st.write(explanation)
 
     else:
   st.error("Liquid entry error. Liquid is not in database")
