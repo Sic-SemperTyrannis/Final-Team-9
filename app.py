@@ -12,7 +12,7 @@ st.write(
 )
 #Add support for both RAG's rag 1 - retrivial tool calculation variables  takes the name and finds all necessity variable's for calculation
 #rag 2 - takes data about the given fluid and possible constraints due to its nature 
-#to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up
+#to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up2
 liquid_name = st.text_input("Enter liquid name:")
 
 use_ai = st.checkbox("Explain result with Gemini AI")
