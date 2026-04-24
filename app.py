@@ -6,22 +6,20 @@ from tool import fluid_properties # This is for RAG1 comment out later if teamat
 from agent import ask_llm
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
-
 st.title("Liquid Boiling Point Calculator")
+st.write("Enter a liquid name to calculate its boiling point.")
 
-st.write(
-    "Enter a liquid name to calculate its boiling point."
-)
 #Add support for both RAG's rag 1 - retrivial tool calculation variables  takes the name and finds all necessity variable's for calculation
 #rag 2 - takes data about the given fluid and possible constraints due to its nature 
 #to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up2
 liquid_name = st.text_input("Enter liquid name:")
 liquid_final_temp = st.text_input("Enter temperture to heat liquid:")
-liquid_initial_temp = st.text_input("Enter intial temp:")
+liquid_initial_temp = st.text_input("Enter intial temperature:")
 liquid_volume = st.text_input("Enter liquid volume:")
 
 use_ai = st.checkbox("Explain result with Gemini AI")
 
+#Button for Streamlit app
 if st.button("Calculate"):
     if not liquid_name.strip():
         st.warning("Please enter a liquid name.")
@@ -55,5 +53,5 @@ if st.button("Calculate"):
                     explanation = ask_llm(prompt)
                     st.write(explanation)
 
-    else:
-  st.error("Liquid entry error. Liquid is not in database")
+        else:
+           st.error("Liquid entry error. Liquid is not in database")
