@@ -1,14 +1,10 @@
 #llm calculator prompts and testing
 """
 How to test yourself on your own branch
-
 (intall dependancies)
-pip install langchain-google-genai
-pip install python-dotenv
-
+pip install langchain-google-genai python-dotenv langchain-community duckduckgo-search ddgs streamlit
 (.env)
 in the .env file put in your google api key
-
 run agent.py
 """
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -33,7 +29,7 @@ llm = ChatGoogleGenerativeAI(
 def ask_llm(prompt):
     response = llm.invoke(prompt)
     return response.content
-
+#-------------RAG1_Search_Query-----------------
 def rag_variable_retriever(fluid_name):
 
     query = f"{fluid_name} properties density kg/m3 specific heat J/kgK boiling point C latent heat J/kg engineering toolbox"
@@ -70,6 +66,8 @@ def rag_variable_retriever(fluid_name):
 
     return response.content
 
+
+#-----------Parsing_Of_LLM_String-----------------
 def rag_lookup(fluid_name, retries=1):
 
     for _ in range(retries):
@@ -108,36 +106,8 @@ def rag_lookup(fluid_name, retries=1):
 
     return None
 
-def llm_heating_system_design(data, result):
 
-    if result["result"] is None:
-        return f"Calculation could not be performed: {result['detail']}"
-
-    prompt = f"""
-    You are a thermodynamic conceptual design generator.
-
-    Given the following system conditions:
-
-    Fluid: {data['name']}
-    Energy required: {result['result']} J
-    Temperature change: {result['properties']['temperature_change (°C)']} °C
-    Boiling point: {result['properties']['boiling_point (°C)']} °C
-
-    Generate a conceptual heating system design.
-
-    Output must include:
-    - One heating system type
-    - Required materials,machinery, and equipment
-    - setup steps
-
-    The response must:
-    - Be concise and technical
-    - Avoid conversational language
-    - Avoid explanations of basic thermodynamics
-    """
-
-    return ask_llm(prompt)
-
+#-----------LLM_CALCULATOR_PROMT-----------------
 def llm_calculation_interpretation(data, result):
     #invalid calulation case
     if result["result"] is None:
@@ -182,9 +152,8 @@ def llm_calculation_interpretation(data, result):
 
     return ask_llm(prompt)
 
-
+#used to transfer RAG_1 data into tool.py
 from tool import fluid_properties
-
 def run_calculation(fluid_name, initial_temp, final_temp, volume):
     data = rag_lookup(fluid_name)
 
@@ -203,7 +172,7 @@ def run_calculation(fluid_name, initial_temp, final_temp, volume):
 
     return data, result
 
-#tesing prints the raw data recieved from tool.py, shows llm raw output returns the data it finds and test plugging the decimal values into the calulator
+#tesing prints the raw data recieved from tool.py, shows LLM raw output returns the data it finds and test plugging the decimal values into the calulator
 if __name__ == "__main__":
     data, result = run_calculation("water", 20, 120, 1)
     print("\nCALCULATION RESULT:")
