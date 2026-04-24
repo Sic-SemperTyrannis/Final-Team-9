@@ -16,6 +16,9 @@ st.write(
 #rag 2 - takes data about the given fluid and possible constraints due to its nature 
 #to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up2
 liquid_name = st.text_input("Enter liquid name:")
+liquid_final_temp = st.text_input("Enter temperture to heat liquid:")
+liquid_initial_temp = st.text_input("Enter intial temp:")
+liquid_volume = st.text_input("Enter liquid volume:")
 
 use_ai = st.checkbox("Explain result with Gemini AI")
 
@@ -30,9 +33,9 @@ if st.button("Calculate"):
             result = fluid_properties(
                 density=data["density"],
                 specific_heat=data["specific_heat"],
-                initial_temp=25, 
-                final_temp=100,
-                volume=1,
+                initial_temp=liquid_initial_temp, 
+                final_temp=liquid_final_temp,
+                volume=liquid_volume,
                 boiling_temp=data["boiling_temp_c"],
                 latent_heat=data["latent_heat"]
             )

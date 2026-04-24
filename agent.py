@@ -14,8 +14,8 @@ run agent.py
 """
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
+from tool import fluid_properties
 import os
-
 
 #loads api key
 load_dotenv()
@@ -68,8 +68,7 @@ def llm_calculation_interpretation(data, result):
 
 #tesing the LLM function (Placeholder values) Calls the agent calculator prompt and also prints the raw data recieved from tool.py
 if __name__ == "__main__":
-    from tool import fluid_properties
-
+    
     data = {"name": "water"}
 
     result = fluid_properties(

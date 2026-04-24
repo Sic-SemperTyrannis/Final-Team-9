@@ -72,5 +72,3 @@ def fluid_properties(density, specific_heat, initial_temp, final_temp,
             "energy_per_volume (J/m^3)": energy_per_volume
         }
     }
-# Test
-print(fluid_properties(5, 1, 20, 30, 2, 80,5))
