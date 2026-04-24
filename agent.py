@@ -9,6 +9,7 @@ run agent.py
 """
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
+from tool import fluid_properties
 import os
 import ast
 from decimal import Decimal
