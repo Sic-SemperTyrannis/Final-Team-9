@@ -1,9 +1,7 @@
 #Needs to be able to take and output data in streamlit make it looka pretty and clean
 import streamlit as st
 from test2 import get_calc_constants
-from tool import fluid_properties # This is for RAG1 comment out later if teamates develop something better. 
-#We were still discussing which file to run RAG through I just threw a preliminary one in here
-from agent import ask_llm
+from agent import ask_llm, run_calculation, llm_calculation_interpretation, rag_heating_consultant
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
 st.title("Liquid Boiling Point Calculator")
@@ -56,7 +54,7 @@ if st.session_state.calculated:
     else:
         st.metric("Energy Required (J)", f"{float(result['result']):.2f}")
         st.metric("Mass (kg)", f"{float(result['properties']['mass (kg)']):.2f}")
-        st.metric("Boiling Point (°C)", f"{float(data['boiling_temp_c']):.2f}")
+        st.metric("Boiling Point (°C)", f"{float(result['properties']['boiling_point (°C)']):.2f}")
 
         if use_ai:
             st.subheader("Calculation interpretation")
