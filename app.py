@@ -30,25 +30,17 @@ if submitted:
     if not liquid_name.strip():
         st.warning("Please enter a liquid name.")
     else:
-        # Retrieve constants from CSV database
-        data = get_calc_constants(liquid_name)
-        if not data:
-            st.error(f"Liquid '{liquid_name}' not found in database.")
-        else:
-            # Calculate fluid properties safely
-            result = fluid_properties(
-                density=data.get("density", 0),
-                specific_heat=data.get("specific_heat", 0),
-                initial_temp=float(liquid_initial_temp),
-                final_temp=float(liquid_final_temp),
-                volume=float(liquid_volume),
-                boiling_temp=data.get("boiling_temp_c", 100),
-                latent_heat=data.get("latent_heat", 0)
-            )
+        with st.spinner(text="Gathering fluid properties...")
+        data, result = run_calculation(
+        liquid_name,
+        float(liquid_initial_temp),
+        float(liquid_final_temp),
+        float(liquid_volume)
+    )
 
-            if result is None:
+        if data is None:
                 st.error("Calculation failed due to invalid inputs.")
-            else:
+        else:
                 st.session_state.calculated = True
                 st.session_state.result = result
                 st.session_state.data = data
