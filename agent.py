@@ -114,7 +114,7 @@ def rag_heating_consultant(data, result):
         return f"Calculation could not be performed: {result['detail']}"
     
     prompt = f"""
-    Act as a Senior Thermal Systems Engineer. Analyze for {data['name']}:
+    Analyze the following heating system requirements for {data['name']}:
     Energy Needed: {result['result']} J | Mass: {result['properties']['mass (kg)']} kg
     
     REQUIRED OUTPUT:
