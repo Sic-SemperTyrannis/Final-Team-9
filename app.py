@@ -12,15 +12,15 @@ st.write("Enter a liquid name to calculate its boiling point.")
 #Add support for both RAG's rag 1 - retrivial tool calculation variables  takes the name and finds all necessity variable's for calculation
 #rag 2 - takes data about the given fluid and possible constraints due to its nature 
 #to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up2
-liquid_name = st.text_input("Enter liquid name:")
-liquid_final_temp = st.text_input("Enter temperture to heat liquid:")
-liquid_initial_temp = st.text_input("Enter intial temperature:")
-liquid_volume = st.text_input("Enter liquid volume:")
+with st.form("input_form"):
+    liquid_name = st.text_input("Enter liquid name:")
+    liquid_final_temp = st.text_input("Enter temperature to heat liquid:")
+    liquid_initial_temp = st.text_input("Enter intial temperature:")
+    liquid_volume = st.text_input("Enter liquid volume:")
+    use_ai = st.checkbox("Explain result with Gemini AI")
+    submitted = st.form_submit_button("Calculate")
 
-use_ai = st.checkbox("Explain result with Gemini AI")
-
-#Button for Streamlit app
-if st.button("Calculate"):
+if submitted:
     if not liquid_name.strip():
         st.warning("Please enter a liquid name.")
     else:
@@ -53,5 +53,9 @@ if st.button("Calculate"):
                     explanation = ask_llm(prompt)
                     st.write(explanation)
 
-        else:
-           st.error("Liquid entry error. Liquid is not in database")
+            # Option to generate heating design
+            st.subheader("Heating System Design")
+            if st.button("Generate Heating Design"):
+                design_prompt = f"Provide a heating system design for {data['name']} to reach {liquid_final_temp}°C from {liquid_initial_temp}°C for {liquid_volume} m³. Include type of machinery, materials, and steps in plain English."
+                design_instructions = ask_llm(design_prompt)
+                st.write(design_instructions)
