@@ -108,6 +108,27 @@ def rag_lookup(fluid_name, retries=1):
     return None
 
 
+
+def rag_heating_consultant(data, result):
+    if result["result"] is None:
+        return f"Calculation could not be performed: {result['detail']}"
+    
+    prompt = f"""
+    Act as a Senior Thermal Systems Engineer. Analyze for {data['name']}:
+    Energy Needed: {result['result']} J | Mass: {result['properties']['mass (kg)']} kg
+    
+    REQUIRED OUTPUT:
+    1. RECOMMENDED MACHINERY
+    2. MATERIAL COMPATIBILITY
+    3. SAFETY CONSTRAINTS
+    4. SETUP STEPS
+
+    Keep each section to 2-3 bullet points maximum. Be concise and technical.
+    """
+
+    return ask_llm(prompt)
+
+
 #-----------LLM_CALCULATOR_PROMT-----------------
 def llm_calculation_interpretation(data, result):
     #invalid calulation case
@@ -180,4 +201,8 @@ if __name__ == "__main__":
     print(result)
     print("\nINTERPRETATION:")
     print(llm_calculation_interpretation(data, result))
-    
+    print("\nHEATING SYSTEM DESIGN:")
+    print(rag_heating_consultant(data, result))
+
+
+
