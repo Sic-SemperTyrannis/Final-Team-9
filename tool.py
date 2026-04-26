@@ -4,8 +4,8 @@
 # Domain : Engineering
 # Description: Takes a few fluid properties and extrapolate other properties
 # and why it matters in the domain> Matters for thermodynamics calculations
-
 # -------------------------------------------------------
+
 def fluid_properties(density, specific_heat, initial_temp, final_temp,
                      volume, boiling_temp, latent_heat) -> dict:
     """
@@ -41,4 +41,37 @@ def fluid_properties(density, specific_heat, initial_temp, final_temp,
 
     # --- Core Logic ---
     mass = density * volume
-    delta_T = final
+    delta_T = final_temp - initial_temp
+    latent_energy = 0
+    Q_to_boil = 0  # Initialize to avoid potential UnboundLocalError
+
+    if initial_temp < boiling_temp:
+        Q_to_boil = mass * specific_heat * (boiling_temp - initial_temp)
+
+    if final_temp < boiling_temp:
+        # No phase change, simple heating
+        Q = mass * specific_heat * delta_T
+    else:
+        # Includes phase change if initial_temp < boiling_temp
+        if initial_temp < boiling_temp:
+            latent_energy = mass * latent_heat
+            Q = Q_to_boil + latent_energy
+        else:
+            # Already above boiling, normal heating
+            Q = mass * specific_heat * delta_T
+
+    energy_per_volume = Q / volume
+
+    return {
+        "result": Q,
+        "unit": "J",
+        "detail": f"m={mass} kg, ΔT={delta_T}°C",
+        "properties": {
+            "mass (kg)": mass,
+            "temperature_change (°C)": delta_T,
+            "boiling_point (°C)": boiling_temp,
+            "energy_to_reach_boiling (J)": Q_to_boil,
+            "latent_heat_added (J)": latent_energy,
+            "energy_per_volume (J/m^3)": energy_per_volume
+        }
+    }
