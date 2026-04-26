@@ -30,13 +30,13 @@ if submitted:
     if not liquid_name.strip():
         st.warning("Please enter a liquid name.")
     else:
-        with st.spinner(text="Gathering fluid properties...")
-        data, result = run_calculation(
-        liquid_name,
-        float(liquid_initial_temp),
-        float(liquid_final_temp),
-        float(liquid_volume)
-    )
+        with st.spinner(text="Gathering fluid properties..."):
+            data, result = run_calculation(
+                liquid_name,
+                float(liquid_initial_temp),
+                float(liquid_final_temp),
+                float(liquid_volume)
+            )
 
         if data is None:
                 st.error("Calculation failed due to invalid inputs.")
@@ -54,18 +54,19 @@ if st.session_state.calculated:
     if result is None or result.get("result") is None:
         st.error(result["detail"] if result else "Calculation could not be performed.")
     else:
-        st.metric("Energy Required (J)", f"{result['result']:.2f}")
-        st.metric("Mass (kg)", f"{result['properties']['mass (kg)']:.2f}")
-        st.metric("Boiling Point (°C)", f"{data['boiling_temp_c']:.2f}")
+        st.metric("Energy Required (J)", f"{float(result['result']):.2f}")
+        st.metric("Mass (kg)", f"{float(result['properties']['mass (kg)']):.2f}")
+        st.metric("Boiling Point (°C)", f"{float(data['boiling_temp_c']):.2f}")
 
         if use_ai:
-            prompt = f" Explain the calculations result briefly: Fluid: {data['name']} Energy Required: {result['result']} J Boiling Point: {data['boiling_temp_c']} °C Keep it under 3 sentences and simple."
-            explanation = ask_llm(prompt)
+            st.subheader("Calculation interpretation")
+            with st.spinner(text="Generating calculation interpretation..."):
+                explanation = llm_calculation_interpretation(data, result)
             st.write(explanation)
 
     # Option to generate heating design
     st.subheader("Heating System Design")
     if st.button("Generate Heating Design"):
-        design_prompt = f"Provide a heating system design for {data['name']} to reach {liquid_final_temp}°C from {liquid_initial_temp}°C for {liquid_volume} m³. Include type of machinery, materials, and steps in plain English."
-        design_instructions = ask_llm(design_prompt)
+        with st.spinner(text="Generating Heating Design..."):
+           design_instructions = rag_heating_consultant(data, result)
         st.write(design_instructions)
