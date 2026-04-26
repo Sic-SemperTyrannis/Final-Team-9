@@ -1,22 +1,25 @@
-#Needs to be able to take and output data in streamlit make it looka pretty and clean
+# Needs to be able to take and output data in streamlit make it looka pretty and clean
 import streamlit as st
 from test2 import get_calc_constants
 from tool import fluid_properties # This is for RAG1 comment out later if teamates develop something better. 
-#We were still discussing which file to run RAG through I just threw a preliminary one in here
+# We were still discussing which file to run RAG through I just threw a preliminary one in here
 from agent import ask_llm
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
 st.title("Liquid Boiling Point Calculator")
 st.write("Enter a liquid name to calculate its boiling point.")
 
-#Add support for both RAG's rag 1 - retrivial tool calculation variables  takes the name and finds all necessity variable's for calculation
-#rag 2 - takes data about the given fluid and possible constraints due to its nature 
-#to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up2
+# Add support for both RAG's rag 1 - retrivial tool calculation variables
+# takes the name and finds all necessity variable's for calculation
+# rag 2 - takes data about the given fluid and possible constraints due to its nature 
+# to then output to the user what kind heating system would need to be set up, 
+# such as type of machinery and materials and give steps on how to set it up
 
 if "calculated" not in st.session_state:
     st.session_state.calculated = False
     st.session_state.result = None
     st.session_state.data = None
+    st.session_state.use_ai = False
 
 with st.form("input_form"):
     liquid_name = st.text_input("Enter liquid name:")
@@ -26,30 +29,34 @@ with st.form("input_form"):
     use_ai = st.checkbox("Explain result with Gemini AI")
     submitted = st.form_submit_button("Calculate")
 
-if submitted:
-    if not liquid_name.strip():
-        st.warning("Please enter a liquid name.")
-    else:
-        data = get_calc_constants(liquid_name)
-        if not data:
-            st.error(f"Liquid '{liquid_name}' not found in database.")
+    if submitted:
+        if not liquid_name.strip():
+            st.warning("Please enter a liquid name.")
         else:
-            result = fluid_properties(
-                density=data["density"],
-                specific_heat=data["specific_heat"],
-                initial_temp=float(liquid_initial_temp),
-                final_temp=float(liquid_final_temp),
-                volume=float(liquid_volume),
-                boiling_temp=data["boiling_temp_c"],
-                latent_heat=data["latent_heat"]
-            )
-            st.session_state.calculated = True
-            st.session_state.result = result
-            st.session_state.data = data
+            data = get_calc_constants(liquid_name)
+            if not data:
+                st.error(f"Liquid '{liquid_name}' not found in database.")
+                st.session_state.calculated = False
+            else:
+                result = fluid_properties(
+                    density=data["density"],
+                    specific_heat=data["specific_heat"],
+                    initial_temp=float(liquid_initial_temp),
+                    final_temp=float(liquid_final_temp),
+                    volume=float(liquid_volume),
+                    boiling_temp=data["boiling_temp_c"],
+                    latent_heat=data["latent_heat"]
+                )
+                st.session_state.calculated = True
+                st.session_state.result = result
+                st.session_state.data = data
+                st.session_state.use_ai = use_ai
 
+# Display results
 if st.session_state.calculated:
     data = st.session_state.data
     result = st.session_state.result
+    use_ai = st.session_state.use_ai
 
     st.subheader(f"Results for {data['name']}")
     if result["result"] is None:
@@ -60,7 +67,7 @@ if st.session_state.calculated:
         st.metric("Boiling Point (°C)", f"{data['boiling_temp_c']:.2f}")
 
         if use_ai:
-            prompt = f" Explain the calculations result briefly: Fluid: {data['name']} Energy Required: {result['result']} J Boiling Point: {data['boiling_temp_c']} °C Keep it under 3 sentences and simple."
+            prompt = f"Explain the calculations result briefly: Fluid: {data['name']} Energy Required: {result['result']} J Boiling Point: {data['boiling_temp_c']} °C Keep it under 3 sentences and simple."
             explanation = ask_llm(prompt)
             st.write(explanation)
 
