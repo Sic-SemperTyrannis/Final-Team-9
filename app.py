@@ -1,17 +1,12 @@
 #Needs to be able to take and output data in streamlit make it looka pretty and clean
 import streamlit as st
 from test2 import get_calc_constants
-from tool import fluid_properties # This is for RAG1 comment out later if teamates develop something better. 
-#We were still discussing which file to run RAG through I just threw a preliminary one in here
-from agent import ask_llm
+from agent import ask_llm, run_calculation, llm_calculation_interpretation, rag_heating_consultant
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
 st.title("Liquid Boiling Point Calculator")
 st.write("Enter a liquid name to calculate its boiling point.")
 
-#Add support for both RAG's rag 1 - retrivial tool calculation variables  takes the name and finds all necessity variable's for calculation
-#rag 2 - takes data about the given fluid and possible constraints due to its nature 
-#to then output to the user what kind heating system would need to be set up, such as type of machinery and materials and give steps on how to set it up2
 
 if "calculated" not in st.session_state:
     st.session_state.calculated = False
@@ -30,43 +25,46 @@ if submitted:
     if not liquid_name.strip():
         st.warning("Please enter a liquid name.")
     else:
-        data = get_calc_constants(liquid_name)
-        if not data:
-            st.error(f"Liquid '{liquid_name}' not found in database.")
-        else:
-            result = fluid_properties(
-                density=data["density"],
-                specific_heat=data["specific_heat"],
-                initial_temp=float(liquid_initial_temp),
-                final_temp=float(liquid_final_temp),
-                volume=float(liquid_volume),
-                boiling_temp=data["boiling_temp_c"],
-                latent_heat=data["latent_heat"]
+        with st.spinner(text="Gathering fluid properties..."):
+            data, result = run_calculation(
+                liquid_name,
+                float(liquid_initial_temp),
+                float(liquid_final_temp),
+                float(liquid_volume)
             )
-            st.session_state.calculated = True
-            st.session_state.result = result
-            st.session_state.data = data
 
+        if data is None:
+                st.error("Calculation failed due to invalid inputs.")
+        else:
+                st.session_state.calculated = True
+                st.session_state.result = result
+                st.session_state.data = data
+
+# Display results if calculation succeeded
 if st.session_state.calculated:
     data = st.session_state.data
     result = st.session_state.result
 
     st.subheader(f"Results for {data['name']}")
-    if result["result"] is None:
-        st.error(result["detail"])
+    if result is None or result.get("result") is None:
+        st.error(result["detail"] if result else "Calculation could not be performed.")
     else:
-        st.metric("Energy Required (J)", f"{result['result']:.2f}")
-        st.metric("Mass (kg)", f"{result['properties']['mass (kg)']:.2f}")
-        st.metric("Boiling Point (°C)", f"{data['boiling_temp_c']:.2f}")
+        st.metric("Energy Required (J)", f"{float(result['result']):.2f}")
+        st.metric("Mass (kg)", f"{float(result['properties']['mass (kg)']):.2f}")
+        st.metric("Boiling Point (°C)", f"{float(result['properties']['boiling_point (°C)']):.2f}")
+        st.metric("Energy to Reach Boiling (J)", f"{float(result['properties']['energy_to_reach_boiling (J)']):.2f}")
+        st.metric("Latent Heat Added (J)", f"{float(result['properties']['latent_heat_added (J)']):.2f}")
+        st.metric("Temperature Change (°C)", f"{float(result['properties']['temperature_change (°C)']):.2f}")
 
         if use_ai:
-            prompt = f" Explain the calculations result briefly: Fluid: {data['name']} Energy Required: {result['result']} J Boiling Point: {data['boiling_temp_c']} °C Keep it under 3 sentences and simple."
-            explanation = ask_llm(prompt)
+            st.subheader("Calculation interpretation")
+            with st.spinner(text="Generating calculation interpretation..."):
+                explanation = llm_calculation_interpretation(data, result)
             st.write(explanation)
 
     # Option to generate heating design
     st.subheader("Heating System Design")
     if st.button("Generate Heating Design"):
-        design_prompt = f"Provide a heating system design for {data['name']} to reach {liquid_final_temp}°C from {liquid_initial_temp}°C for {liquid_volume} m³. Include type of machinery, materials, and steps in plain English."
-        design_instructions = ask_llm(design_prompt)
+        with st.spinner(text="Generating Heating Design..."):
+           design_instructions = rag_heating_consultant(data, result)
         st.write(design_instructions)
