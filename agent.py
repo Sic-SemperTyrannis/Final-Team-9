@@ -22,7 +22,7 @@ load_dotenv()
 
 #initializes gemini
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-flash-lite",
     temperature=0
 )
 
@@ -173,6 +173,19 @@ def llm_calculation_interpretation(data, result):
 
 
     return ask_llm(prompt)
+
+
+#determine if user input is a valid fluid
+def is_valid_fluid(fluid_name):
+    prompt = f"""
+    Is "{fluid_name}" a fluid or liquid that has thermodynamic properties like density, specific heat, and boiling point?
+    Answer only "yes" or "no".
+    """
+    response = ask_llm(prompt)
+    return response.strip().lower() == "yes"
+
+
+
 
 #used to transfer RAG_1 data into tool.py
 from tool import fluid_properties

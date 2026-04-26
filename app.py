@@ -1,7 +1,7 @@
 #Needs to be able to take and output data in streamlit make it looka pretty and clean
 import streamlit as st
 from test2 import get_calc_constants
-from agent import ask_llm, run_calculation, llm_calculation_interpretation, rag_heating_consultant
+from agent import ask_llm, run_calculation, llm_calculation_interpretation, rag_heating_consultant, is_valid_fluid
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
 st.title("Liquid Boiling Point Calculator")
@@ -15,27 +15,35 @@ if "calculated" not in st.session_state:
 
 with st.form("input_form"):
     liquid_name = st.text_input("Enter liquid name:")
-    liquid_initial_temp = st.number_input("Enter initial temperature (°C):", value=25.0)
-    liquid_final_temp = st.number_input("Enter temperature to heat liquid (°C):", value=100.0)
-    liquid_volume = st.number_input("Enter liquid volume (m³):", value=1.0, min_value=0.0)
+    liquid_initial_temp = st.number_input("Enter initial temperature (°C):", value=0.0)
+    liquid_final_temp = st.number_input("Enter temperature to heat liquid (°C):", value=0.0)
+    liquid_volume = st.number_input("Enter liquid volume (m³):", value=1.0, min_value=0.1)
     use_ai = st.checkbox("Explain result with Gemini AI")
     submitted = st.form_submit_button("Calculate")
 
 if submitted:
     if not liquid_name.strip():
         st.warning("Please enter a liquid name.")
+    elif float(liquid_final_temp) <= float(liquid_initial_temp):
+        st.warning("Final temperature must be greater than initial temperature.")
+    elif float(liquid_volume) < 0:
+        st.warning("Volume must be greater than 0.")
     else:
-        with st.spinner(text="Gathering fluid properties..."):
-            data, result = run_calculation(
-                liquid_name,
-                float(liquid_initial_temp),
-                float(liquid_final_temp),
-                float(liquid_volume)
-            )
-
-        if data is None:
-                st.error("Calculation failed due to invalid inputs.")
+        with st.spinner("Validating input..."):
+            valid = is_valid_fluid(liquid_name)
+        if not valid:
+            st.warning("Please enter a valid fluid name.")
         else:
+            with st.spinner("Gathering fluid properties..."):
+                data, result = run_calculation(
+                    liquid_name,
+                    float(liquid_initial_temp),
+                    float(liquid_final_temp),
+                    float(liquid_volume)
+                )
+            if data is None:
+                st.error("Calculation failed due to invalid inputs.")
+            else:
                 st.session_state.calculated = True
                 st.session_state.result = result
                 st.session_state.data = data
