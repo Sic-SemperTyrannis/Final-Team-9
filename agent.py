@@ -16,11 +16,20 @@ from decimal import Decimal
 from langchain_community.tools import DuckDuckGoSearchRun
 import re
 from langsmith import traceable
-from tool import fluid_properties
 search = DuckDuckGoSearchRun()
 
 #loads api key
 load_dotenv()
+
+try:
+    import streamlit as st
+    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+    os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
+    os.environ["LANGSMITH_ENDPOINT"] = st.secrets["LANGSMITH_ENDPOINT"]
+    os.environ["LANGSMITH_TRACING"] = st.secrets["LANGSMITH_TRACING"]
+    os.environ["LANGSMITH_PROJECT"] = st.secrets["LANGSMITH_PROJECT"]
+except:
+    pass
 
 #initializes gemini
 llm = ChatGoogleGenerativeAI(

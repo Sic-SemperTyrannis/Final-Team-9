@@ -42,7 +42,7 @@ def fluid_properties(density, specific_heat, initial_temp, final_temp,
     mass = density * volume
     delta_T = final_temp - initial_temp
     latent_energy =0
-
+    
 
     if initial_temp < boiling_temp:
         Q_to_boil = mass * specific_heat * (boiling_temp - initial_temp)

@@ -1,6 +1,5 @@
 #Needs to be able to take and output data in streamlit make it looka pretty and clean
 import streamlit as st
-from test2 import get_calc_constants
 from agent import ask_llm, run_calculation, llm_calculation_interpretation, rag_heating_consultant, is_valid_fluid
 
 st.set_page_config(page_title="Boiling Point Calculator", layout="centered")
