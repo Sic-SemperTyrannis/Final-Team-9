@@ -11,4 +11,5 @@ dependencies = [
     "streamlit>=1.56.0",
     "langchain-community",
     "duckduckgo-search>=8.0.0",
+    "ddgs>=9.14.1",
 ]
