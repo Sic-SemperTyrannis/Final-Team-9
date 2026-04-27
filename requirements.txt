@@ -1,0 +1,6 @@
+langchain-google-genai>=4.2.2
+langsmith>=0.7.34
+python-dotenv>=1.0.1
+streamlit>=1.56.0
+langchain-community>=0.3.0
+duckduckgo-search>=8.0.0
