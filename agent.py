@@ -15,6 +15,8 @@ import ast
 from decimal import Decimal
 from langchain_community.tools import DuckDuckGoSearchRun
 import re
+from langsmith import traceable
+from tool import fluid_properties
 search = DuckDuckGoSearchRun()
 
 #loads api key
@@ -27,6 +29,7 @@ llm = ChatGoogleGenerativeAI(
 )
 
 #LLm call 
+@traceable(name="LLM Call")
 def ask_llm(prompt):
     response = llm.invoke(prompt)
     return response.content
@@ -69,6 +72,7 @@ def rag_variable_retriever(fluid_name):
 
 
 #-----------Parsing_Of_LLM_String-----------------
+@traceable(name="RAG 1 - Variable Retrieval")
 def rag_lookup(fluid_name, retries=1):
 
     for _ in range(retries):
@@ -108,7 +112,7 @@ def rag_lookup(fluid_name, retries=1):
     return None
 
 
-
+@traceable(name="RAG 2 - Heating Design")
 def rag_heating_consultant(data, result):
     if result["result"] is None:
         return f"Calculation could not be performed: {result['detail']}"
@@ -188,7 +192,8 @@ def is_valid_fluid(fluid_name):
 
 
 #used to transfer RAG_1 data into tool.py
-from tool import fluid_properties
+
+@traceable(name="Full Calculation Pipeline")
 def run_calculation(fluid_name, initial_temp, final_temp, volume):
     data = rag_lookup(fluid_name)
 
